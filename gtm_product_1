@@ -8,7 +8,7 @@
   tasks:
     - name: Include template
       include_vars:
-        file: template.yml
+        file: cfg/template.yml
 
     - name: Debug credentials
       debug:

@@ -1,0 +1,14 @@
+# ensure you've activated enp0s3 which is the default iface name in Virtualbox using nmtui
+# ensure you've mounted the VirtualBox Guest Addition via VirtualBox GUI
+---
+- hosts: all
+  become: true
+
+  tasks:
+  - name: Include template
+    include_vars:
+      file: variables/vars_product1.yml
+
+  - name: Finished
+    debug:
+      msg: "{{ ltm_node_list | length }}"
