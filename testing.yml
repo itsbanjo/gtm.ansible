@@ -7,7 +7,7 @@
   tasks:
   - name: Include template
     include_vars:
-      file: variables/vars_product1.yml
+      file: variables/vars_product1
 
   - name: Finished
     debug:
