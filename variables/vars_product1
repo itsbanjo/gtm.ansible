@@ -1,8 +1,8 @@
 # this is deprecated so need to figure out how this is done
-username: marield
-password: ZAQ!2345%
-gtm_server: 172.21.221.166
-domain_name: gtm.2degrees.nz
+username: xxxx
+password: xxxxx
+gtm_server: xxxx
+domain_name: xxxx
 
 #This section is for DNS record that you want to respond to. Therefore, you need to specify the full FQDN in this section. We normally just use A records
 
