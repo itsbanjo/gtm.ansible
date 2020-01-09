@@ -23,3 +23,4 @@ For now, we use "three" concepts of "load balancing" which I will explain later.
 *Balanced Across Sites* - There are instances that the total number of nodes are uneven or even with an "even" total number of nodes. So ratio, must be calculated. For example, KPR has 5 nodes then HAM has 1 nodes.
 
 *KPR or HAM site only* - More traffic in one site at a time. 
+
