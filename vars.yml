@@ -1,7 +1,7 @@
 ---
 # vars file for gtm.provisioning
 
-domain_name: gtm.2degrees.nz
+domain_name: gtm.ourlab.nz
 service_name: "{{ service_name }}"
 vlan_id: "{{ vlan_id }}"
 vlan_name: "vlan{{ vlan_id }}"

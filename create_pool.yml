@@ -23,5 +23,5 @@
         alternate_lb_method: none
         fallback_lb_method: none
       with_items:
-         - kpr
-         - ham
+         - akl
+         - wgt

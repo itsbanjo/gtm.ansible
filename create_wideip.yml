@@ -5,10 +5,10 @@
   gather_facts: false
   connection: local
   vars:
-      site_1: kpr
-      site_2: ham
-      kpr: {}
-      ham: {}
+      site_1: akl
+      site_2: wgt
+      akl: {}
+      wgt: {}
 
   tasks:
     - name: Include vars
@@ -27,7 +27,7 @@
          total_size: "{{ members | length | int }}"
       when: lb_method == "balanced"
       
-    - name: Group KPR and HAM IP member addresses
+    - name: Group AKL and WGT IP member addresses
       vars:
          pool: {}
       set_fact:
@@ -38,18 +38,18 @@
          - lb_method == "balanced"
 
 
-    - name: KPR grouping
+    - name: AKL grouping
       set_fact:
-         kpr: "{{ kpr | combine( { item : item } ) }}"
+         akl: "{{ akl | combine( { item : item } ) }}"
       with_items: "{{ members }}"
       when: 
          - item.split('.')[1]|int == 21
          - nlb_method == "ratio"
          - lb_method == "balanced"
        
-    - name: HAM grouping
+    - name: WGT grouping
       set_fact:
-         ham: "{{ ham | combine( { item : item } ) }}"
+         wgt: "{{ wgt | combine( { item : item } ) }}"
       with_items: "{{ members }}"
       when: 
          - item.split('.')[1]|int == 23
@@ -58,8 +58,8 @@
 
     - name: size
       set_fact:
-         kpr_ratio: "{{ (( 100 / total_size | int ) * kpr | length | int ) | int }}"
-         ham_ratio: "{{ (( 100 / total_size | int ) * ham | length | int ) | int  }}"
+         akl_ratio: "{{ (( 100 / total_size | int ) * akl | length | int ) | int }}"
+         wgt_ratio: "{{ (( 100 / total_size | int ) * wgt | length | int ) | int  }}"
       when: 
          - nlb_method == "ratio"
          - lb_method == "balanced"
@@ -74,8 +74,8 @@
          partition: "{{ partition }}"
          pool_lb_method: "{{ lb_method }}"
          pools:
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.akl" 
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.wgt"           
       when: 
          - nlb_method == "round-robin"
          - lb_method == "balanced"
@@ -90,10 +90,10 @@
          partition: "{{ partition }}"
          pool_lb_method: "{{ nlb_method }}"
          pools:
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
-              ratio: "{{ kpr_ratio }}"
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
-              ratio: "{{ ham_ratio }}"
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.akl" 
+              ratio: "{{ akl_ratio }}"
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.wgt"           
+              ratio: "{{ wgt_ratio }}"
       when: 
          - nlb_method == "ratio"
          - lb_method == "balanced"
@@ -108,12 +108,12 @@
          partition: "{{ partition }}"
          pool_lb_method: ratio
          pools:
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.akl" 
               ratio: 99
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.wgt"           
               ratio: 1
       when: 
-         - lb_method == "kpr_only"
+         - lb_method == "akl_only"
 
     - name: Creating wide ip "{{ fqdn }} with {{ lb_method }} using ratio"
       bigip_gtm_wide_ip:
@@ -125,9 +125,9 @@
          partition: "{{ partition }}"
          pool_lb_method: ratio
          pools:
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.akl" 
               ratio: 1
-            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.wgt"           
               ratio: 99
       when: 
-         - lb_method == "ham_only"
+         - lb_method == "wgt_only"

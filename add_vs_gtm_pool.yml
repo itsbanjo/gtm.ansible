@@ -14,8 +14,8 @@
            
     - name: Adding Pool Members
       vars:
-         a: kpr
-         b: ham
+         a: akl
+         b: wgt
       bigip_gtm_pool_member:
          server_name: "gtm.{{ a if ( item.split('.')[1]|int == 21 ) else b  }}"
          virtual_server: "{{ item }}"

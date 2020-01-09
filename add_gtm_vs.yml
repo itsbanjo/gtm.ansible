@@ -14,8 +14,8 @@
                    
     - name: Adding Virtual Server to the GTM servers in their correct sites
       vars:
-         a: kpr
-         b: ham
+         a: akl
+         b: wgt
       bigip_gtm_virtual_server:
          name: "{{ item }}"
          address: "{{ item }}"
