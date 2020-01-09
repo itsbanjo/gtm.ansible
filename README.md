@@ -24,3 +24,4 @@ For now, we use "three" concepts of "load balancing" which I will explain later.
 
 *KPR or HAM site only* - More traffic in one site at a time. 
 
+[logo]: images/setup.PNG "Logo Title Text 2"
