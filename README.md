@@ -8,7 +8,7 @@ The biggest problem we have had over the years with F5 devices are
 2. Easy to follow how the service was provisioned.
 3. What the service is for?
 4. Where does the F5 service fits into the businesses big picture?
-5. There is no need for a VIP. 
+5. There is no need for a VIP. This reduces the "troubleshooting" by different departments for now ;)
 
 #### How did Ansible help you?
 We have two main use cases (for now):
