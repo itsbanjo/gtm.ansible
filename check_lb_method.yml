@@ -1,0 +1,54 @@
+- hosts: localhost
+  gather_facts: false
+  vars:
+     textarea: "172.21.1.2\n172.21.1.3\n172.23.1.4"
+     site_1: kpr
+     site_2: ham
+     kpr: {}
+     ham: {}
+  tasks:
+  - name: set_facts
+    set_fact:
+       members: "{{ textarea.split('\n') }}"
+
+  - name: Determining Wide-ip pool load-balancing method
+    vars:
+       a: round-robin
+       b: ratio
+    set_fact:
+       lb_method: "{{ a if ( members | length | int % 2 == 0 ) else b }}"
+       total_size: "{{ members | length | int }}"
+
+  - name: Group KPR and HAM IP member addresses
+    vars:
+       pool: {}
+    set_fact:
+       pool: "{{ pool | combine( { item : site_1 if ( item.split('.')[1]|int == 21 ) else site_2 } ) }}"
+    with_items: "{{ members }}"
+
+  - name: KPR grouping
+    set_fact:
+       kpr: "{{ kpr | combine( { item : item } ) }}"
+    with_items: "{{ members }}"
+    when: item.split('.')[1]|int == 21 
+
+  - name: HAM grouping
+    set_fact:
+       ham: "{{ ham | combine( { item : item } ) }}"
+    with_items: "{{ members }}"
+    when: item.split('.')[1]|int == 23
+
+  - name: ratio_size
+    set_fact:
+       kpr_ratio: "{{ (( 100 / total_size | int ) * kpr | length | int ) | int }}"
+       ham_ratio: "{{ (( 100 / total_size | int ) * kpr | length | int ) | int  }}"
+
+  - name: Provisioning testing round-robin
+    debug:
+       msg: "Round-robin"
+    when: lb_method == "round-robin"
+
+  - name: Provisioning testing ratio
+    debug:
+       msg: "Ratio"
+    when: lb_method == "ratio"

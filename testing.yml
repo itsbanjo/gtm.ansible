@@ -1,0 +1,18 @@
+# ensure you've activated enp0s3 which is the default iface name in Virtualbox using nmtui
+# ensure you've mounted the VirtualBox Guest Addition via VirtualBox GUI
+---
+- hosts: all
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Learn how to use text area type Survey
+      set_fact:
+         members: "{{ textarea.split('\n') }}"
+         
+    - name: Debug
+      debug:
+         msg: "DEBUG HIT: {{ item }}"
+      with_items: "{{ members }}"
+      when: 
+         - item | ipaddr 

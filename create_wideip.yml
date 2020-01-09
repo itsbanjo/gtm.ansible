@@ -1,0 +1,133 @@
+---
+
+- name: F5 ansible playground
+  hosts: all
+  gather_facts: false
+  connection: local
+  vars:
+      site_1: kpr
+      site_2: ham
+      kpr: {}
+      ham: {}
+
+  tasks:
+    - name: Include vars
+      include_vars:
+         file: vars.yml
+    - name: set_facts
+      set_fact:
+         members: "{{ textarea.split('\n') }}"
+
+    - name: Check if "{{ lb_method }}" is still achieved
+      vars:
+         a: "round-robin"
+         b: "ratio"
+      set_fact:
+         nlb_method: "{{ a if ( members | length | int % 2 == 0 ) else b }}"
+         total_size: "{{ members | length | int }}"
+      when: lb_method == "balanced"
+      
+    - name: Group KPR and HAM IP member addresses
+      vars:
+         pool: {}
+      set_fact:
+         pool: "{{ pool | combine( { item : site_1 if ( item.split('.')[1]|int == 21 ) else site_2 } ) }}"
+      with_items: "{{ members }}"
+      when: 
+         - nlb_method == "ratio"
+         - lb_method == "balanced"
+
+
+    - name: KPR grouping
+      set_fact:
+         kpr: "{{ kpr | combine( { item : item } ) }}"
+      with_items: "{{ members }}"
+      when: 
+         - item.split('.')[1]|int == 21
+         - nlb_method == "ratio"
+         - lb_method == "balanced"
+       
+    - name: HAM grouping
+      set_fact:
+         ham: "{{ ham | combine( { item : item } ) }}"
+      with_items: "{{ members }}"
+      when: 
+         - item.split('.')[1]|int == 23
+         - nlb_method == "ratio"
+         - lb_method == "balanced"
+
+    - name: size
+      set_fact:
+         kpr_ratio: "{{ (( 100 / total_size | int ) * kpr | length | int ) | int }}"
+         ham_ratio: "{{ (( 100 / total_size | int ) * ham | length | int ) | int  }}"
+      when: 
+         - nlb_method == "ratio"
+         - lb_method == "balanced"
+
+    - name: Creating wide ip "{{ fqdn }} with {{ lb_method }} using {{ nlb_method }}"
+      bigip_gtm_wide_ip:
+         name: "{{ fqdn }}"
+         type: "{{ record_type }}"
+         provider:
+            server: "{{ inventory_hostname }}"
+            validate_certs: "false"
+         partition: "{{ partition }}"
+         pool_lb_method: "{{ lb_method }}"
+         pools:
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
+      when: 
+         - nlb_method == "round-robin"
+         - lb_method == "balanced"
+
+    - name: Creating wide ip "{{ fqdn }} with {{ lb_method }} using {{ nlb_method }}"
+      bigip_gtm_wide_ip:
+         name: "{{ fqdn }}"
+         type: "{{ record_type }}"
+         provider:
+            server: "{{ inventory_hostname }}"
+            validate_certs: "false"
+         partition: "{{ partition }}"
+         pool_lb_method: "{{ nlb_method }}"
+         pools:
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
+              ratio: "{{ kpr_ratio }}"
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
+              ratio: "{{ ham_ratio }}"
+      when: 
+         - nlb_method == "ratio"
+         - lb_method == "balanced"
+
+    - name: Creating wide ip "{{ fqdn }} with {{ lb_method }} using ratio"
+      bigip_gtm_wide_ip:
+         name: "{{ fqdn }}"
+         type: "{{ record_type }}"
+         provider:
+            server: "{{ inventory_hostname }}"
+            validate_certs: "false"
+         partition: "{{ partition }}"
+         pool_lb_method: ratio
+         pools:
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
+              ratio: 99
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
+              ratio: 1
+      when: 
+         - lb_method == "kpr_only"
+
+    - name: Creating wide ip "{{ fqdn }} with {{ lb_method }} using ratio"
+      bigip_gtm_wide_ip:
+         name: "{{ fqdn }}"
+         type: "{{ record_type }}"
+         provider:
+            server: "{{ inventory_hostname }}"
+            validate_certs: "false"
+         partition: "{{ partition }}"
+         pool_lb_method: ratio
+         pools:
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.kpr" 
+              ratio: 1
+            - name: "pool.{{ service_name }}.{{ vlan_name }}.ham"           
+              ratio: 99
+      when: 
+         - lb_method == "ham_only"

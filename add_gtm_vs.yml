@@ -1,0 +1,28 @@
+---
+- hosts: all
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Setting facts
+      set_fact:
+         members: "{{ textarea.split('\n') }}"
+         
+    - name: Include vars
+      include_vars:
+         file: vars.yml
+                   
+    - name: Adding Virtual Server to the GTM servers in their correct sites
+      vars:
+         a: kpr
+         b: ham
+      bigip_gtm_virtual_server:
+         name: "{{ item }}"
+         address: "{{ item }}"
+         server_name: "gtm.{{ a if ( item.split('.')[1]|int == 21 ) else b  }}"
+         provider:
+            server: "{{ inventory_hostname }}"
+            validate_certs: "false"
+      with_items: "{{ members }}"
+      when: 
+         - item | ipaddr      

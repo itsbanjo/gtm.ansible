@@ -1,0 +1,9 @@
+---
+# vars file for gtm.provisioning
+
+domain_name: gtm.2degrees.nz
+service_name: "{{ service_name }}"
+vlan_id: "{{ vlan_id }}"
+vlan_name: "vlan{{ vlan_id }}"
+fqdn: "{{ service_name }}.{{ vlan_name }}.{{ domain_name }}"
+partition: "{{ partition }}"

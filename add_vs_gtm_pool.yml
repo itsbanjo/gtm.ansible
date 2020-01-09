@@ -1,0 +1,29 @@
+---
+- hosts: all
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Setting facts
+      set_fact:
+         members: "{{ textarea.split('\n') }}"
+         
+    - name: Include vars
+      include_vars:
+         file: vars.yml
+           
+    - name: Adding Pool Members
+      vars:
+         a: kpr
+         b: ham
+      bigip_gtm_pool_member:
+         server_name: "gtm.{{ a if ( item.split('.')[1]|int == 21 ) else b  }}"
+         virtual_server: "{{ item }}"
+         type: "{{ record_type }}"
+         pool: "pool.{{ service_name }}.{{ vlan_name }}.{{ a if ( item.split('.')[1]|int == 21 ) else b  }}"
+         provider:
+            server: "{{ inventory_hostname }}"
+            validate_certs: "false"
+      with_items: "{{ members }}"
+      when: 
+         - item | ipaddr 
